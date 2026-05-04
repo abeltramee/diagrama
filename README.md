@@ -1,45 +1,46 @@
 ### Arquitectura del Sistema
 ```mermaid
 graph TD
-  ... (
-    %% Definición de estilos
-    classDef analog fill:#f9f,stroke:#333,stroke-width:2px,color:black;
-    classDef digital fill:#d4edda,stroke:#28a745,stroke-width:2px,color:black;
-    classDef peripheral fill:#cce5ff,stroke:#007bff,stroke-width:2px,color:black;
-    classDef software fill:#fff3cd,stroke:#ffc107,stroke-width:2px,stroke-dasharray: 5 5,color:black;
-
+  ... (graph TD
     %% --- MUNDO ANALÓGICO DE ENTRADA (Baseboard) ---
-    subgraph "Baseboard de Acondicionamiento (Analógico)"
-        Mic["Micrófono / Entrada Jack"]:::analog --> PreAmp["Pre-amplificador y Suma de Offset DC"]:::analog
-        PreAmp --> AAF["Filtro Antialiasing Analógico (Pasa-bajos)"]:::analog
+    subgraph "Baseboard de Acondicionamiento"
+        Mic["Micrófono / Entrada Jack"] --> PreAmp["Pre-amplificador y Offset DC"]
+        PreAmp --> AAF["Filtro Antialiasing (Pasa-bajos)"]
     end
 
     %% --- NÚCLEO DIGITAL (STM32) ---
-    subgraph "STM32 NUCLEO-F446RE (Dominio Digital)"
-        AAF == "Señal Analógica (0-3.3V)" ==> ADC[ADC]:::digital
+    subgraph "STM32 NUCLEO-F446RE"
+        AAF == "Señal (0-3.3V)" ==> ADC[ADC]
 
-        subgraph "Arquitectura de Software (FreeRTOS)"
-            ADC -- DMA --> BuffRX["Buffer RX (buffer_RX[])"]:::software
+        subgraph "Software (FreeRTOS)"
+            ADC -- DMA --> BuffRX["Buffer RX"]
+            BuffRX --> DSP_Task["Tarea DSP (Filtros)"]
+            DSP_Task --> BuffTX["Buffer TX"]
+            BuffTX -- DMA --> DAC[DAC]
             
-            BuffRX --> DSP_Task["Tarea DSP: Filtros FIR/IIR"]:::software
-            
-            DSP_Task --> BuffTX["Buffer TX (buffer_TX[])"]:::software
-            
-            BuffTX -- DMA --> DAC[DAC]:::digital
-            
-            USB_Task["Tarea USB: Parámetros"]:::software -.->|Actualiza Coeficientes| DSP_Task
-            GUI_Task["Tarea GUI: Display"]:::software
+            USB_Task["Tarea USB"] -.->|Parámetros| DSP_Task
+            GUI_Task["Tarea GUI"]
         end
     end
 
-    %% --- PERIFÉRICOS E INTERFACES ---
-    PC["PC Host (Control)"]:::peripheral <==>|USB| USB_Task
-    
-    GUI_Task ==>|SPI| Display["Display TFT / Matrix"]:::peripheral
+    %% --- PERIFÉRICOS ---
+    PC["PC Host"] <==>|USB| USB_Task
+    GUI_Task ==>|SPI| Display["Display"]
 
-    %% --- MUNDO ANALÓGICO DE SALIDA ---
-    subgraph "Etapa de Salida (Analógica)"
-        DAC == Señal Escalada ==> ReconFilter["Filtro de Reconstrucción"]:::analog
-        ReconFilter --> AmpSalida["Salida Jack"]:::analog
-        AmpSalida --> Speaker["Speaker / Headphones"]:::analog
-    end)
+    %% --- SALIDA ---
+    subgraph "Etapa de Salida"
+        DAC == Audio ==> ReconFilter["Filtro Reconstrucción"]
+        ReconFilter --> AmpSalida["Salida Jack"]
+        AmpSalida --> Speaker["Speaker"]
+    end
+
+    %% Estilos (Aplicados al final para evitar errores de parseo)
+    class Mic,PreAmp,AAF,ReconFilter,AmpSalida,Speaker analog;
+    class ADC,DAC digital;
+    class PC,Display peripheral;
+    class BuffRX,DSP_Task,BuffTX,USB_Task,GUI_Task software;
+
+    classDef analog fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef digital fill:#d4edda,stroke:#28a745,stroke-width:2px;
+    classDef peripheral fill:#cce5ff,stroke:#007bff,stroke-width:2px;
+    classDef software fill:#fff3cd,stroke:#ffc107,stroke-width:2px,stroke-dasharray: 5 5;)
