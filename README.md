@@ -4,16 +4,20 @@ graph TD
     %% --- MUNDO ANALÓGICO DE ENTRADA (Baseboard) ---
     subgraph "Baseboard de Acondicionamiento"
         Mic["Micrófono / Entrada Jack"] --> PreAmp["Pre-amplificador y Offset DC"]
-        PreAmp --> AAF["Filtro Antialiasing (Pasa-bajos)"]
     end
 
     %% --- NÚCLEO DIGITAL (STM32) ---
     subgraph "STM32 NUCLEO-F446RE"
-        AAF == "Señal (0-3.3V)" ==> ADC[ADC]
+        PreAmp == "Señal (0-3.3V)" ==> ADC[ADC]
 
         subgraph "Software (FreeRTOS)"
             ADC -- DMA --> BuffRX["Buffer RX"]
-            BuffRX --> DSP_Node["DSP (Filtros)"]
+            
+            subgraph "Procesamiento Digital"
+                BuffRX --> AA_Digital["Antialiasing Digital"]
+                AA_Digital --> DSP_Node["DSP (Filtros FIR/IIR)"]
+            end
+            
             DSP_Node --> BuffTX["Buffer TX"]
             BuffTX -- DMA --> DAC[DAC]
             
@@ -26,18 +30,18 @@ graph TD
     PC["PC Host"] <==>|USB| USB_Node
     GUI_Node ==>|SPI| Display["Display"]
 
-    %% --- SALIDA (Corregida según imagen) ---
+    %% --- SALIDA (Con Módulo PAM8403) ---
     subgraph "Etapa de Salida"
         DAC == "Audio" ==> ReconFilter["Filtro Reconstrucción"]
-        ReconFilter --> AmpSalida["Salida Jack"]
-        AmpSalida --> Speaker["Speaker"]
+        ReconFilter --> PAM8403["Módulo Ampl. PAM8403"]
+        PAM8403 --> Speaker["Speaker"]
     end
 
-    %% Estilos con texto en negro forzado
-    class Mic,PreAmp,AAF,ReconFilter,AmpSalida,Speaker analog;
+    %% Estilos con texto en negro
+    class Mic,PreAmp,ReconFilter,PAM8403,Speaker analog;
     class ADC,DAC digital;
     class PC,Display peripheral;
-    class BuffRX,DSP_Node,BuffTX,USB_Node,GUI_Node software;
+    class BuffRX,AA_Digital,DSP_Node,BuffTX,USB_Node,GUI_Node software;
 
     classDef analog fill:#f9f,stroke:#333,stroke-width:2px,color:#000;
     classDef digital fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#000;
