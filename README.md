@@ -30,15 +30,15 @@ graph TD
     PC["PC Host"] <==>|USB| USB_Node
     GUI_Node ==>|SPI| Display["Display"]
 
-    %% --- SALIDA (Con Módulo PAM8403) ---
+    %% --- SALIDA SIMPLIFICADA ---
     subgraph "Etapa de Salida"
-        DAC == "Audio" ==> ReconFilter["Filtro Reconstrucción"]
-        ReconFilter --> PAM8403["Módulo Ampl. PAM8403"]
-        PAM8403 --> Speaker["Speaker"]
+        DAC == "Audio" ==> CapAcople["Capacitor de Acople"]
+        CapAcople --> Amp["Amplificador"]
+        Amp --> Speaker["Speaker"]
     end
 
     %% Estilos con texto en negro
-    class Mic,PreAmp,ReconFilter,PAM8403,Speaker analog;
+    class Mic,PreAmp,CapAcople,Amp,Speaker analog;
     class ADC,DAC digital;
     class PC,Display peripheral;
     class BuffRX,AA_Digital,DSP_Node,BuffTX,USB_Node,GUI_Node software;
