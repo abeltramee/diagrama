@@ -1,7 +1,7 @@
 ### Arquitectura del Sistema
 ```mermaid
 graph TD
-  ... (graph TD
+  ... (
     %% Definición de estilos
     classDef analog fill:#f9f,stroke:#333,stroke-width:2px,color:black;
     classDef digital fill:#d4edda,stroke:#28a745,stroke-width:2px,color:black;
