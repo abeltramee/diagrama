@@ -10,42 +10,36 @@ graph TD
 
     %% --- MUNDO ANALÓGICO DE ENTRADA (Baseboard) ---
     subgraph "Baseboard de Acondicionamiento (Analógico)"
-        Mic[Micrófono / Entrada Jack]:::analog --> PreAmp[Pre-amplificador y Suma de Offset DC]:::analog
-        PreAmp --> AAF[Filtro Antialiasing Analógico (Pasa-bajos)]:::analog
+        Mic["Micrófono / Entrada Jack"]:::analog --> PreAmp["Pre-amplificador y Suma de Offset DC"]:::analog
+        PreAmp --> AAF["Filtro Antialiasing Analógico (Pasa-bajos)"]:::analog
     end
 
     %% --- NÚCLEO DIGITAL (STM32) ---
     subgraph "STM32 NUCLEO-F446RE (Dominio Digital)"
-        AAF == Señal Analógica (0-3.3V) ==> ADC[ADC (Conversor A/D)]:::digital
+        AAF == "Señal Analógica (0-3.3V)" ==> ADC[ADC]:::digital
 
         subgraph "Arquitectura de Software (FreeRTOS)"
-            ADC -- DMA --> BuffRX[Buffer RX (buffer_RX[])]:::software
+            ADC -- DMA --> BuffRX["Buffer RX (buffer_RX[])"]:::software
             
-            BuffRX --> DSP_Task[Tarea DSP: Filtros Digitales FIR/IIR + AA Digital]:::software
+            BuffRX --> DSP_Task["Tarea DSP: Filtros FIR/IIR"]:::software
             
-            DSP_Task --> BuffTX[Buffer TX (buffer_TX[])]:::software
+            DSP_Task --> BuffTX["Buffer TX (buffer_TX[])"]:::software
             
-            BuffTX -- DMA --> DAC[DAC (Conversor D/A)]:::digital
+            BuffTX -- DMA --> DAC[DAC]:::digital
             
-            USB_Task[Tarea USB: Recepción de Parámetros]:::software -.->|Actualiza Coeficientes| DSP_Task
-            GUI_Task[Tarea GUI: Gestión de Display]:::software
+            USB_Task["Tarea USB: Parámetros"]:::software -.->|Actualiza Coeficientes| DSP_Task
+            GUI_Task["Tarea GUI: Display"]:::software
         end
     end
 
     %% --- PERIFÉRICOS E INTERFACES ---
-    PC[PC Host (Control)]:::peripheral <==>|USB (Comunicaciones)| USB_Task
+    PC["PC Host (Control)"]:::peripheral <==>|USB| USB_Task
     
-    GUI_Task ==>|SPI (Datos + Clock)| Display[Display TFT / Dot Matrix]:::peripheral
+    GUI_Task ==>|SPI| Display["Display TFT / Matrix"]:::peripheral
 
     %% --- MUNDO ANALÓGICO DE SALIDA ---
     subgraph "Etapa de Salida (Analógica)"
-        DAC == Señal Escalada ==> ReconFilter[Filtro de Reconstrucción Analógico]:::analog
-        ReconFilter --> AmpSalida[Adaptación de Impedancia / Salida Jack]:::analog
-        AmpSalida --> Speaker[Altavoces / Auriculares]:::analog
-    end
-
-    %% Leyenda de conexiones
-    %% ==> Flujo de Audio Principal
-    %% --> Flujo de Datos Interno
-    %% -.-> Flujo de Control/Parámetros
-    %% <==> Comunicación Bidireccional)
+        DAC == Señal Escalada ==> ReconFilter["Filtro de Reconstrucción"]:::analog
+        ReconFilter --> AmpSalida["Salida Jack"]:::analog
+        AmpSalida --> Speaker["Speaker / Headphones"]:::analog
+    end)
