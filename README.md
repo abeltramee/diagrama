@@ -1,7 +1,6 @@
 ### Arquitectura del Sistema
 ```mermaid
 graph TD
-  ... (graph TD
     %% --- MUNDO ANALÓGICO DE ENTRADA (Baseboard) ---
     subgraph "Baseboard de Acondicionamiento"
         Mic["Micrófono / Entrada Jack"] --> PreAmp["Pre-amplificador y Offset DC"]
@@ -43,4 +42,4 @@ graph TD
     classDef analog fill:#f9f,stroke:#333,stroke-width:2px;
     classDef digital fill:#d4edda,stroke:#28a745,stroke-width:2px;
     classDef peripheral fill:#cce5ff,stroke:#007bff,stroke-width:2px;
-    classDef software fill:#fff3cd,stroke:#ffc107,stroke-width:2px,stroke-dasharray: 5 5;)
+    classDef software fill:#fff3cd,stroke:#ffc107,stroke-width:2px,stroke-dasharray: 5 5;
