@@ -4,18 +4,18 @@ graph TD
     %% --- MUNDO ANALÓGICO DE ENTRADA (Baseboard) ---
     subgraph "Baseboard de Acondicionamiento"
         Mic["Micrófono / Entrada Jack"] --> PreAmp["Pre-amplificador y Offset DC"]
+        PreAmp --> AA_Analog["Filtro Antialiasing (Pasa-bajos)"]
     end
 
     %% --- NÚCLEO DIGITAL (STM32) ---
     subgraph "STM32 NUCLEO-F446RE"
-        PreAmp == "Señal (0-3.3V)" ==> ADC[ADC]
+        AA_Analog == "Señal (0-3.3V)" ==> ADC[ADC]
 
         subgraph "Software (FreeRTOS)"
             ADC -- DMA --> BuffRX["Buffer RX"]
             
             subgraph "Procesamiento Digital"
-                BuffRX --> AA_Digital["Antialiasing Digital"]
-                AA_Digital --> DSP_Node["DSP (Filtros FIR/IIR)"]
+                BuffRX --> DSP_Node["DSP (Filtros FIR/IIR)"]
             end
             
             DSP_Node --> BuffTX["Buffer TX"]
@@ -38,10 +38,10 @@ graph TD
     end
 
     %% Estilos con texto en negro
-    class Mic,PreAmp,CapAcople,Amp,Speaker analog;
+    class Mic,PreAmp,AA_Analog,CapAcople,Amp,Speaker analog;
     class ADC,DAC digital;
     class PC,Display peripheral;
-    class BuffRX,AA_Digital,DSP_Node,BuffTX,USB_Node,GUI_Node software;
+    class BuffRX,DSP_Node,BuffTX,USB_Node,GUI_Node software;
 
     classDef analog fill:#f9f,stroke:#333,stroke-width:2px,color:#000;
     classDef digital fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#000;
